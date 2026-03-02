@@ -500,6 +500,16 @@ function triggerExplosion() {
     }, 1000);
 }
 
+function triggerPileBounce() {
+    const pileDisplay = document.getElementById('pile-display');
+    pileDisplay.classList.add('bounce');
+
+    // Remove class after animation completes
+    setTimeout(() => {
+        pileDisplay.classList.remove('bounce');
+    }, 600);
+}
+
 // Play selected cards
 document.getElementById('play-cards-btn').addEventListener('click', () => {
     if (selectedCards.length === 0) return;
@@ -515,7 +525,13 @@ document.getElementById('play-cards-btn').addEventListener('click', () => {
             if (response.result && response.result.blowUp) {
                 triggerExplosion();
                 showMessage('game-message', 'BOOM! Pile blown up!', 'success');
-            } else {
+            }
+            // Trigger bounce animation if reset card (2) was played (extraTurn but no blowUp)
+            else if (response.result && response.result.extraTurn && !response.result.blowUp) {
+                triggerPileBounce();
+                showMessage('game-message', 'Reset! Play any card', 'success');
+            }
+            else {
                 showMessage('game-message', 'Cards played!', 'success');
             }
         } else {
@@ -566,6 +582,14 @@ socket.on('gameState', (newGameState) => {
                         newGameState.gameStarted &&
                         !newGameState.gameEnded;
 
+    // Check if a 2 (reset card) was just played
+    const resetCardPlayed = gameState &&
+                           newGameState.topCard &&
+                           newGameState.topCard.rank === '2' &&
+                           (!gameState.topCard || gameState.topCard.rank !== '2') &&
+                           newGameState.gameStarted &&
+                           !newGameState.gameEnded;
+
     gameState = newGameState;
 
     if (gameState.gameEnded) {
@@ -577,6 +601,10 @@ socket.on('gameState', (newGameState) => {
         // Trigger explosion if pile was blown up
         if (pileBlownUp) {
             triggerExplosion();
+        }
+        // Trigger bounce if reset card (2) was played
+        else if (resetCardPlayed) {
+            triggerPileBounce();
         }
     } else {
         updateWaitingRoom();
