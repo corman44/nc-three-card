@@ -18,6 +18,7 @@ class Player {
      */
     addToHand(card) {
         this.hand.push(card);
+        this.sortHand();
     }
 
     /**
@@ -25,6 +26,30 @@ class Player {
      */
     addCardsToHand(cards) {
         this.hand.push(...cards);
+        this.sortHand();
+    }
+
+    /**
+     * Sort hand by card value (lowest to highest)
+     */
+    sortHand() {
+        this.hand.sort((a, b) => {
+            // Get comparable values (3-14, with 2 and 10 having special values)
+            const aVal = this.getCardSortValue(a);
+            const bVal = this.getCardSortValue(b);
+            return aVal - bVal;
+        });
+    }
+
+    /**
+     * Get card value for sorting purposes
+     */
+    getCardSortValue(card) {
+        const values = {
+            '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+            '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14, '2': 15
+        };
+        return values[card.rank] || 0;
     }
 
     /**

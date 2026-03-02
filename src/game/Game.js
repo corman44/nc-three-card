@@ -156,6 +156,15 @@ class Game {
 
         let cards = [];
 
+        // Enforce playing order: hand -> faceUp -> faceDown
+        if (zone === 'faceUp' && player.hand.length > 0) {
+            throw new Error('Must play all hand cards before playing face-up cards');
+        }
+
+        if (zone === 'faceDown' && (player.hand.length > 0 || player.faceUp.length > 0)) {
+            throw new Error('Must play all hand and face-up cards before playing face-down cards');
+        }
+
         // Get cards based on zone
         if (zone === 'hand') {
             cards = cardIndices.map(i => player.hand[i]).filter(c => c);

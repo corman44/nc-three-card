@@ -154,14 +154,21 @@ function updateOtherPlayers() {
             div.classList.add('active-turn');
         }
 
+        const totalCards = player.totalCards || 0;
+
         div.innerHTML = `
             <div class="opponent-name">${player.name}</div>
             <div class="opponent-cards">
-                Hand: ${player.handCount} |
-                Face-up: ${player.faceUp.length} |
-                Face-down: ${player.faceDownCount}
+                <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 5px;">
+                    Total Cards: ${totalCards}
+                </div>
+                <div style="font-size: 0.9em;">
+                    Hand: ${player.handCount} |
+                    Face-up: ${player.faceUp.length} |
+                    Face-down: ${player.faceDownCount}
+                </div>
             </div>
-            ${player.finished ? '<div style="color: #48bb78; font-weight: bold;">✓ Finished</div>' : ''}
+            ${player.finished ? '<div style="color: #48bb78; font-weight: bold; margin-top: 8px;">✓ Finished</div>' : ''}
         `;
 
         container.appendChild(div);
@@ -201,8 +208,9 @@ function updatePlayerCards() {
     document.getElementById('faceup-count').textContent = `(${myPlayer.faceUp.length})`;
     faceUpContainer.innerHTML = '';
 
+    const canPlayFaceUp = myPlayer.hand?.length === 0;
     myPlayer.faceUp.forEach((card, index) => {
-        const cardEl = createCardElement(card, index, 'faceUp');
+        const cardEl = createCardElement(card, index, 'faceUp', !canPlayFaceUp);
         faceUpContainer.appendChild(cardEl);
     });
 
@@ -211,18 +219,23 @@ function updatePlayerCards() {
     document.getElementById('facedown-count').textContent = `(${myPlayer.faceDownCount})`;
     faceDownContainer.innerHTML = '';
 
+    const canPlayFaceDown = myPlayer.hand?.length === 0 && myPlayer.faceUp.length === 0;
     for (let i = 0; i < myPlayer.faceDownCount; i++) {
-        const cardBack = createCardBack(i);
+        const cardBack = createCardBack(i, !canPlayFaceDown);
         faceDownContainer.appendChild(cardBack);
     }
 }
 
-function createCardElement(card, index, zone) {
+function createCardElement(card, index, zone, disabled = false) {
     const div = document.createElement('div');
     div.className = 'card';
 
     const color = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
     div.classList.add(color);
+
+    if (disabled) {
+        div.classList.add('disabled');
+    }
 
     div.innerHTML = `
         <div class="card-rank">${card.rank}</div>
@@ -230,7 +243,7 @@ function createCardElement(card, index, zone) {
     `;
 
     div.addEventListener('click', () => {
-        if (!gameState.isYourTurn) return;
+        if (!gameState.isYourTurn || disabled) return;
 
         const selectedIndex = selectedCards.findIndex(c => c.index === index && c.zone === zone);
 
@@ -258,12 +271,18 @@ function createCardElement(card, index, zone) {
     return div;
 }
 
-function createCardBack(index) {
+function createCardBack(index, disabled = false) {
     const div = document.createElement('div');
     div.className = 'card-back';
 
+    if (disabled) {
+        div.classList.add('disabled');
+        div.style.opacity = '0.5';
+        div.style.cursor = 'not-allowed';
+    }
+
     div.addEventListener('click', () => {
-        if (!gameState.isYourTurn) return;
+        if (!gameState.isYourTurn || disabled) return;
 
         const myPlayer = gameState.players.find(p => p.id === playerId);
         if (myPlayer.hand && myPlayer.hand.length > 0) return; // Can only play face-down when hand is empty
