@@ -20,6 +20,13 @@ const screens = {
 function showScreen(screenName) {
     Object.values(screens).forEach(screen => screen.classList.remove('active'));
     screens[screenName].classList.add('active');
+
+    // Toggle body class for game screen
+    if (screenName === 'game') {
+        document.body.classList.add('game-active');
+    } else {
+        document.body.classList.remove('game-active');
+    }
 }
 
 // Show message
