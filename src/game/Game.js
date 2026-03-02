@@ -17,6 +17,7 @@ class Game {
         this.gameEnded = false;
         this.maxPlayers = playerCount;
         this.finishOrder = [];
+        this.pileReset = false; // Track if pile was just reset by a 2
     }
 
     /**
@@ -126,8 +127,13 @@ class Game {
 
         const topCard = this.getTopCard();
 
-        // If pile is empty or reset, any card can be played
+        // If pile is empty, any card can be played
         if (!topCard || this.pile.length === 0) {
+            return true;
+        }
+
+        // If pile was just reset by a 2, any card can be played
+        if (this.pileReset) {
             return true;
         }
 
@@ -211,6 +217,9 @@ class Game {
             player.removeFromFaceDown(cardIndices[0]);
         }
 
+        // Clear reset flag (will be set again if a 2 is played)
+        this.pileReset = false;
+
         // Add cards to pile
         this.pile.push(...cards);
 
@@ -228,6 +237,7 @@ class Game {
 
         // Check for reset (2 card)
         else if (cards[0].isReset()) {
+            this.pileReset = true; // Set flag so next player can play any card
             extraTurn = true;
         }
 
