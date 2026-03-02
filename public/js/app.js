@@ -115,10 +115,21 @@ function updateGameScreen() {
     document.getElementById('deck-count').textContent = gameState.deckCount;
     document.getElementById('pile-count').textContent = gameState.pileCount;
 
+    // Update control panel info
+    document.getElementById('deck-count-panel').textContent = gameState.deckCount;
+    document.getElementById('pile-count-panel').textContent = gameState.pileCount;
+
+    // Calculate player's total cards
+    const myPlayer = gameState.players.find(p => p.id === playerId);
+    if (myPlayer) {
+        const totalCards = (myPlayer.hand?.length || 0) + myPlayer.faceUp.length + myPlayer.faceDownCount;
+        document.getElementById('player-total-cards').textContent = totalCards;
+    }
+
     // Update turn indicator
     const turnIndicator = document.getElementById('turn-indicator');
     if (gameState.isYourTurn) {
-        turnIndicator.textContent = 'YOUR TURN';
+        turnIndicator.textContent = '✨ YOUR TURN ✨';
         turnIndicator.className = 'turn-indicator your-turn';
     } else {
         const currentPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);

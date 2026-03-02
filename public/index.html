@@ -58,58 +58,89 @@
 
         <!-- Game Screen -->
         <div id="game-screen" class="screen">
-            <!-- Game Info Bar -->
-            <div class="game-info-bar">
-                <div class="deck-info">
-                    <span>Deck: <strong id="deck-count">0</strong></span>
+            <!-- Card Table (Main Game Area) -->
+            <div class="card-table">
+                <!-- Game Info Bar -->
+                <div class="game-info-bar">
+                    <div class="deck-info">
+                        <span>🃏 Deck: <strong id="deck-count">0</strong></span>
+                    </div>
+                    <div class="turn-info">
+                        <span id="turn-indicator">Waiting...</span>
+                    </div>
+                    <div class="pile-info">
+                        <span>🗂️ Pile: <strong id="pile-count">0</strong></span>
+                    </div>
                 </div>
-                <div class="turn-info">
-                    <span id="turn-indicator">Waiting...</span>
+
+                <!-- Other Players (Top of Table) -->
+                <div id="other-players" class="other-players"></div>
+
+                <!-- Center Pile (Middle of Table) -->
+                <div class="center-area">
+                    <div id="pile-display" class="pile-display">
+                        <div class="empty-pile">Empty Pile</div>
+                    </div>
                 </div>
-                <div class="pile-info">
-                    <span>Pile: <strong id="pile-count">0</strong></span>
+
+                <!-- Current Player Area (Bottom of Table) -->
+                <div class="player-area">
+                    <h3>🎴 Your Cards</h3>
+
+                    <div class="card-zones-container">
+                        <!-- Hand Cards -->
+                        <div class="card-zone">
+                            <h4>Hand <span id="hand-count">(0)</span></h4>
+                            <div id="player-hand" class="card-container"></div>
+                        </div>
+
+                        <!-- Face-up Cards -->
+                        <div class="card-zone">
+                            <h4>Face-up <span id="faceup-count">(0)</span></h4>
+                            <div id="player-faceup" class="card-container"></div>
+                        </div>
+
+                        <!-- Face-down Cards -->
+                        <div class="card-zone">
+                            <h4>Face-down <span id="facedown-count">(0)</span></h4>
+                            <div id="player-facedown" class="card-container"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Other Players -->
-            <div id="other-players" class="other-players"></div>
+            <!-- Control Panel (Right Side) -->
+            <div class="control-panel">
+                <h3>⚙️ Controls</h3>
 
-            <!-- Center Pile -->
-            <div class="center-area">
-                <div id="pile-display" class="pile-display">
-                    <div class="empty-pile">Empty Pile</div>
-                </div>
-            </div>
-
-            <!-- Current Player Area -->
-            <div class="player-area">
-                <h3>Your Cards</h3>
-
-                <!-- Hand Cards -->
-                <div class="card-zone">
-                    <h4>Hand <span id="hand-count">(0)</span></h4>
-                    <div id="player-hand" class="card-container"></div>
-                </div>
-
-                <!-- Face-up Cards -->
-                <div class="card-zone">
-                    <h4>Face-up <span id="faceup-count">(0)</span></h4>
-                    <div id="player-faceup" class="card-container"></div>
+                <!-- Game Info -->
+                <div class="info-section">
+                    <h4>📊 Game Status</h4>
+                    <div class="info-item">
+                        <span>Cards in Deck:</span>
+                        <strong id="deck-count-panel">0</strong>
+                    </div>
+                    <div class="info-item">
+                        <span>Cards in Pile:</span>
+                        <strong id="pile-count-panel">0</strong>
+                    </div>
+                    <div class="info-item">
+                        <span>Your Total Cards:</span>
+                        <strong id="player-total-cards">0</strong>
+                    </div>
                 </div>
 
-                <!-- Face-down Cards -->
-                <div class="card-zone">
-                    <h4>Face-down <span id="facedown-count">(0)</span></h4>
-                    <div id="player-facedown" class="card-container"></div>
+                <!-- Actions -->
+                <div class="action-section">
+                    <h4>🎯 Actions</h4>
+                    <button id="play-cards-btn" class="btn btn-primary" disabled>
+                        ▶️ Play Selected Cards
+                    </button>
+                    <button id="pickup-pile-btn" class="btn btn-secondary" disabled>
+                        📥 Pick Up Pile
+                    </button>
+                    <div id="game-message" class="message"></div>
                 </div>
-
-                <!-- Action Buttons -->
-                <div class="action-area">
-                    <button id="play-cards-btn" class="btn btn-primary" disabled>Play Selected Cards</button>
-                    <button id="pickup-pile-btn" class="btn btn-secondary" disabled>Pick Up Pile</button>
-                </div>
-
-                <div id="game-message" class="message"></div>
             </div>
         </div>
 
