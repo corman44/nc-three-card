@@ -444,18 +444,36 @@ function renderCard(card) {
 }
 
 function updateActionButtons() {
+    // Update both desktop and mobile buttons
     const playBtn = document.getElementById('play-cards-btn');
     const pickupBtn = document.getElementById('pickup-pile-btn');
+    const playBtnMobile = document.getElementById('play-cards-btn-mobile');
+    const pickupBtnMobile = document.getElementById('pickup-pile-btn-mobile');
 
     const canPlay = gameState.isYourTurn && selectedCards.length > 0;
     playBtn.disabled = !canPlay;
+    playBtnMobile.disabled = !canPlay;
 
     const canPickup = gameState.isYourTurn && gameState.pileCount > 0;
     pickupBtn.disabled = !canPickup;
+    pickupBtnMobile.disabled = !canPickup;
+
+    // Update button text if face-up card selection is needed
+    if (canPickup) {
+        const currentPlayer = gameState.players.find(p => p.id === playerId);
+        const needsFaceUpSelection = currentPlayer &&
+                                      currentPlayer.handCount === 0 &&
+                                      currentPlayer.faceUp.length > 0 &&
+                                      gameState.deckCount === 0;
+
+        const buttonText = needsFaceUpSelection ? 'Pick Up Pile (+ 1 Face-up)' : 'Pick Up Pile';
+        pickupBtn.textContent = buttonText;
+        pickupBtnMobile.textContent = buttonText;
+    }
 }
 
-// Play selected cards
-document.getElementById('play-cards-btn').addEventListener('click', () => {
+// Shared function to play cards
+function handlePlayCards() {
     if (selectedCards.length === 0) return;
 
     const cardIndices = selectedCards.map(c => c.index);
@@ -465,22 +483,34 @@ document.getElementById('play-cards-btn').addEventListener('click', () => {
         if (response.success) {
             selectedCards = [];
             showMessage('game-message', 'Cards played!', 'success');
+            showMessage('game-message-mobile', 'Cards played!', 'success');
         } else {
             showMessage('game-message', response.error, 'error');
+            showMessage('game-message-mobile', response.error, 'error');
         }
     });
-});
+}
 
-// Pick up pile
-document.getElementById('pickup-pile-btn').addEventListener('click', () => {
+// Shared function to pick up pile
+function handlePickupPile() {
     socket.emit('pickUpPile', {}, (response) => {
         if (response.success) {
             showMessage('game-message', 'Picked up pile', 'info');
+            showMessage('game-message-mobile', 'Picked up pile', 'info');
         } else {
             showMessage('game-message', response.error, 'error');
+            showMessage('game-message-mobile', response.error, 'error');
         }
     });
-});
+}
+
+// Desktop buttons
+document.getElementById('play-cards-btn').addEventListener('click', handlePlayCards);
+document.getElementById('pickup-pile-btn').addEventListener('click', handlePickupPile);
+
+// Mobile buttons
+document.getElementById('play-cards-btn-mobile').addEventListener('click', handlePlayCards);
+document.getElementById('pickup-pile-btn-mobile').addEventListener('click', handlePickupPile);
 
 // === GAME OVER ===
 function showGameOver() {
