@@ -281,6 +281,45 @@ header h1 {
     color: #cbd5e0;
 }
 
+.opponent-faceup-cards {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+    justify-content: center;
+}
+
+.opponent-small-card {
+    width: 50px;
+    height: 70px;
+    background: white;
+    border: 2px solid #2d3748;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.opponent-small-card .card-rank {
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.opponent-small-card .card-suit {
+    font-size: 1.4em;
+    line-height: 1;
+}
+
+.opponent-small-card.red {
+    color: #e53e3e;
+}
+
+.opponent-small-card.black {
+    color: #2d3748;
+}
+
 /* Center Pile - Middle of table */
 .center-area {
     flex: 1;
@@ -586,6 +625,19 @@ header h1 {
 
     .opponent-card {
         width: 100%;
+    }
+
+    .opponent-small-card {
+        width: 40px;
+        height: 56px;
+    }
+
+    .opponent-small-card .card-rank {
+        font-size: 1em;
+    }
+
+    .opponent-small-card .card-suit {
+        font-size: 1.2em;
     }
 
     .card {

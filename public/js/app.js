@@ -167,8 +167,25 @@ function updateOtherPlayers() {
 
         const totalCards = player.totalCards || 0;
 
+        // Render face-up cards
+        let faceUpCardsHtml = '';
+        if (player.faceUp && player.faceUp.length > 0) {
+            faceUpCardsHtml = '<div class="opponent-faceup-cards">';
+            player.faceUp.forEach(card => {
+                const color = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
+                faceUpCardsHtml += `
+                    <div class="opponent-small-card ${color}">
+                        <div class="card-rank">${card.rank}</div>
+                        <div class="card-suit">${card.suit}</div>
+                    </div>
+                `;
+            });
+            faceUpCardsHtml += '</div>';
+        }
+
         div.innerHTML = `
             <div class="opponent-name">${player.name}</div>
+            ${faceUpCardsHtml}
             <div class="opponent-cards">
                 <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 5px;">
                     Total Cards: ${totalCards}
@@ -179,7 +196,7 @@ function updateOtherPlayers() {
                     Face-down: ${player.faceDownCount}
                 </div>
             </div>
-            ${player.finished ? '<div style="color: #48bb78; font-weight: bold; margin-top: 8px;">✓ Finished</div>' : ''}
+            ${player.finished ? '<div style="color: #48bb78; font-weight: bold; margin-top: 8px;">Finished</div>' : ''}
         `;
 
         container.appendChild(div);
