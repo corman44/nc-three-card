@@ -34,6 +34,92 @@ function showMessage(elementId, message, type = 'info') {
 }
 
 // === LOBBY ===
+// Load available games on page load
+function loadAvailableGames() {
+    socket.emit('getAvailableGames', (response) => {
+        const gamesList = document.getElementById('available-games-list');
+
+        if (response.success) {
+            if (response.games.length === 0) {
+                gamesList.innerHTML = '<div class="no-games">No games available. Create a new one!</div>';
+            } else {
+                gamesList.innerHTML = '';
+                response.games.forEach(game => {
+                    const gameItem = document.createElement('div');
+                    gameItem.className = 'game-item';
+
+                    gameItem.innerHTML = `
+                        <div class="game-item-info">
+                            <div class="game-item-id">${game.gameId.substring(0, 8)}...</div>
+                            <div class="game-item-players">Players: ${game.playerCount}/${game.maxPlayers} - ${game.players.join(', ')}</div>
+                        </div>
+                        <button class="game-item-join" data-game-id="${game.gameId}">Join</button>
+                    `;
+
+                    gameItem.querySelector('.game-item-join').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        joinGameById(game.gameId);
+                    });
+
+                    gamesList.appendChild(gameItem);
+                });
+            }
+        } else {
+            gamesList.innerHTML = '<div class="no-games">Failed to load games</div>';
+        }
+    });
+}
+
+// Join a game by ID
+function joinGameById(joinGameId) {
+    const playerName = document.getElementById('player-name').value.trim();
+
+    if (!playerName) {
+        showMessage('lobby-message', 'Please enter your name first', 'error');
+        return;
+    }
+
+    socket.emit('joinGame', { gameId: joinGameId, playerName }, (response) => {
+        if (response.success) {
+            playerId = response.playerId;
+            gameId = joinGameId;
+            gameState = response.gameState;
+
+            document.getElementById('waiting-game-id').textContent = gameId;
+            showScreen('waiting');
+            updateWaitingRoom();
+        } else {
+            showMessage('lobby-message', response.error, 'error');
+        }
+    });
+}
+
+// Refresh games list every 3 seconds when on lobby screen
+let gamesRefreshInterval = null;
+
+function startGamesRefresh() {
+    loadAvailableGames();
+    gamesRefreshInterval = setInterval(() => {
+        if (screens.lobby.classList.contains('active')) {
+            loadAvailableGames();
+        }
+    }, 3000);
+}
+
+function stopGamesRefresh() {
+    if (gamesRefreshInterval) {
+        clearInterval(gamesRefreshInterval);
+        gamesRefreshInterval = null;
+    }
+}
+
+// Start loading games when socket connects
+socket.on('connect', () => {
+    if (screens.lobby.classList.contains('active')) {
+        startGamesRefresh();
+    }
+});
+
 document.getElementById('create-game-btn').addEventListener('click', () => {
     const playerName = document.getElementById('player-name').value.trim();
 
@@ -48,6 +134,7 @@ document.getElementById('create-game-btn').addEventListener('click', () => {
             gameId = response.gameId;
             gameState = response.gameState;
 
+            stopGamesRefresh();
             document.getElementById('waiting-game-id').textContent = gameId;
             showScreen('waiting');
             updateWaitingRoom();

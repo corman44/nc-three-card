@@ -8,15 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Three Card Game</h1>
-            <p class="subtitle">Multiplayer Card Game (2-4 Players)</p>
-        </header>
-
         <!-- Lobby Screen -->
         <div id="lobby-screen" class="screen active">
             <div class="lobby-content">
-                <h2>Join or Create Game</h2>
+                <h2>Three Card Game</h2>
+                <p class="subtitle">Multiplayer Card Game (2-4 Players)</p>
 
                 <div class="form-group">
                     <label for="player-name">Your Name:</label>
@@ -28,11 +24,20 @@
 
                     <div class="or-divider">OR</div>
 
+                    <div id="available-games-section">
+                        <h3>Available Games</h3>
+                        <div id="available-games-list" class="games-list">
+                            <div class="loading-games">Loading games...</div>
+                        </div>
+                    </div>
+
+                    <div class="or-divider">OR</div>
+
                     <div class="form-group">
-                        <label for="game-id">Game ID:</label>
+                        <label for="game-id">Enter Game ID:</label>
                         <input type="text" id="game-id" placeholder="Enter game ID to join">
                     </div>
-                    <button id="join-game-btn" class="btn btn-secondary">Join Game</button>
+                    <button id="join-game-btn" class="btn btn-secondary">Join by ID</button>
                 </div>
 
                 <div id="lobby-message" class="message"></div>

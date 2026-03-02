@@ -61,6 +61,30 @@ io.on('connection', (socket) => {
     console.log(`Client connected: ${socket.id}`);
 
     /**
+     * Get list of available games (not started yet)
+     */
+    socket.on('getAvailableGames', (callback) => {
+        try {
+            const availableGames = [];
+
+            for (const [gameId, game] of games.entries()) {
+                if (!game.gameStarted) {
+                    availableGames.push({
+                        gameId: gameId,
+                        playerCount: game.players.length,
+                        maxPlayers: game.maxPlayers,
+                        players: game.players.map(p => p.name)
+                    });
+                }
+            }
+
+            callback({ success: true, games: availableGames });
+        } catch (error) {
+            callback({ success: false, error: error.message });
+        }
+    });
+
+    /**
      * Create a new game
      */
     socket.on('createGame', (data, callback) => {
