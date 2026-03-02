@@ -575,14 +575,6 @@ document.getElementById('new-game-btn').addEventListener('click', () => {
 
 // === SOCKET EVENT HANDLERS ===
 socket.on('gameState', (newGameState) => {
-    // Check if a 2 (reset card) was just played
-    const resetCardPlayed = gameState &&
-                           newGameState.topCard &&
-                           newGameState.topCard.rank === '2' &&
-                           (!gameState.topCard || gameState.topCard.rank !== '2') &&
-                           newGameState.gameStarted &&
-                           !newGameState.gameEnded;
-
     gameState = newGameState;
 
     if (gameState.gameEnded) {
@@ -590,11 +582,6 @@ socket.on('gameState', (newGameState) => {
     } else if (gameState.gameStarted) {
         showScreen('game');
         updateGameScreen();
-
-        // Trigger bounce if reset card (2) was played
-        if (resetCardPlayed) {
-            triggerPileBounce();
-        }
     } else {
         updateWaitingRoom();
     }
@@ -650,4 +637,21 @@ document.getElementById('chat-input').addEventListener('keypress', (e) => {
 
 socket.on('chatMessage', (data) => {
     addChatMessage(data.playerName, data.message);
+});
+
+// Listen for special effects (explosion, bounce)
+socket.on('specialEffect', (data) => {
+    if (data.blowUp) {
+        triggerExplosion();
+        // Only show message if it's not our own play (we already got feedback)
+        if (data.playerId !== playerId) {
+            showMessage('game-message', `${data.playerName} blew up the pile!`, 'success');
+        }
+    } else if (data.extraTurn && !data.blowUp) {
+        triggerPileBounce();
+        // Only show message if it's not our own play
+        if (data.playerId !== playerId) {
+            showMessage('game-message', `${data.playerName} played a 2!`, 'success');
+        }
+    }
 });
