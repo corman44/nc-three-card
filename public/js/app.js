@@ -575,13 +575,6 @@ document.getElementById('new-game-btn').addEventListener('click', () => {
 
 // === SOCKET EVENT HANDLERS ===
 socket.on('gameState', (newGameState) => {
-    // Check if pile was blown up (pile went to 0 and top card changed)
-    const pileBlownUp = gameState &&
-                        gameState.pileCount > 0 &&
-                        newGameState.pileCount === 0 &&
-                        newGameState.gameStarted &&
-                        !newGameState.gameEnded;
-
     // Check if a 2 (reset card) was just played
     const resetCardPlayed = gameState &&
                            newGameState.topCard &&
@@ -598,12 +591,8 @@ socket.on('gameState', (newGameState) => {
         showScreen('game');
         updateGameScreen();
 
-        // Trigger explosion if pile was blown up
-        if (pileBlownUp) {
-            triggerExplosion();
-        }
         // Trigger bounce if reset card (2) was played
-        else if (resetCardPlayed) {
+        if (resetCardPlayed) {
             triggerPileBounce();
         }
     } else {
