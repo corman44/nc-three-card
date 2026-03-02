@@ -452,6 +452,21 @@ function updateActionButtons() {
 
     const canPickup = gameState.isYourTurn && gameState.pileCount > 0;
     pickupBtn.disabled = !canPickup;
+
+    // Update button text if face-up card selection is needed
+    if (canPickup) {
+        const currentPlayer = gameState.players.find(p => p.id === playerId);
+        const needsFaceUpSelection = currentPlayer &&
+                                      currentPlayer.handCount === 0 &&
+                                      currentPlayer.faceUp.length > 0 &&
+                                      gameState.deckCount === 0;
+
+        if (needsFaceUpSelection) {
+            pickupBtn.textContent = 'Pick Up Pile (+ 1 Face-up)';
+        } else {
+            pickupBtn.textContent = 'Pick Up Pile';
+        }
+    }
 }
 
 function triggerExplosion() {
@@ -542,13 +557,47 @@ document.getElementById('play-cards-btn').addEventListener('click', () => {
 
 // Pick up pile
 document.getElementById('pickup-pile-btn').addEventListener('click', () => {
-    socket.emit('pickUpPile', {}, (response) => {
-        if (response.success) {
-            showMessage('game-message', 'Picked up pile', 'info');
-        } else {
-            showMessage('game-message', response.error, 'error');
+    // Check if player needs to select a face-up card
+    const currentPlayer = gameState.players.find(p => p.id === playerId);
+    const needsFaceUpSelection = currentPlayer &&
+                                  currentPlayer.handCount === 0 &&
+                                  currentPlayer.faceUp.length > 0 &&
+                                  gameState.deckCount === 0;
+
+    if (needsFaceUpSelection) {
+        // Check if a face-up card is selected
+        const hasFaceUpSelected = selectedCards.length > 0 && selectedCards[0].zone === 'faceUp';
+
+        if (!hasFaceUpSelected) {
+            showMessage('game-message', 'Select a face-up card to pick up with the pile', 'error');
+            return;
         }
-    });
+
+        // Only allow one face-up card
+        if (selectedCards.length > 1) {
+            showMessage('game-message', 'Select only ONE face-up card to pick up', 'error');
+            return;
+        }
+
+        const faceUpIndex = selectedCards[0].index;
+        socket.emit('pickUpPile', { faceUpIndex }, (response) => {
+            if (response.success) {
+                selectedCards = [];
+                showMessage('game-message', 'Picked up pile with face-up card', 'info');
+            } else {
+                showMessage('game-message', response.error, 'error');
+            }
+        });
+    } else {
+        // Normal pickup (no face-up card needed)
+        socket.emit('pickUpPile', {}, (response) => {
+            if (response.success) {
+                showMessage('game-message', 'Picked up pile', 'info');
+            } else {
+                showMessage('game-message', response.error, 'error');
+            }
+        });
+    }
 });
 
 // === GAME OVER ===
@@ -575,21 +624,6 @@ document.getElementById('new-game-btn').addEventListener('click', () => {
 
 // === SOCKET EVENT HANDLERS ===
 socket.on('gameState', (newGameState) => {
-    // Check if pile was blown up (pile went to 0 and top card changed)
-    const pileBlownUp = gameState &&
-                        gameState.pileCount > 0 &&
-                        newGameState.pileCount === 0 &&
-                        newGameState.gameStarted &&
-                        !newGameState.gameEnded;
-
-    // Check if a 2 (reset card) was just played
-    const resetCardPlayed = gameState &&
-                           newGameState.topCard &&
-                           newGameState.topCard.rank === '2' &&
-                           (!gameState.topCard || gameState.topCard.rank !== '2') &&
-                           newGameState.gameStarted &&
-                           !newGameState.gameEnded;
-
     gameState = newGameState;
 
     if (gameState.gameEnded) {
@@ -597,15 +631,6 @@ socket.on('gameState', (newGameState) => {
     } else if (gameState.gameStarted) {
         showScreen('game');
         updateGameScreen();
-
-        // Trigger explosion if pile was blown up
-        if (pileBlownUp) {
-            triggerExplosion();
-        }
-        // Trigger bounce if reset card (2) was played
-        else if (resetCardPlayed) {
-            triggerPileBounce();
-        }
     } else {
         updateWaitingRoom();
     }
@@ -661,4 +686,21 @@ document.getElementById('chat-input').addEventListener('keypress', (e) => {
 
 socket.on('chatMessage', (data) => {
     addChatMessage(data.playerName, data.message);
+});
+
+// Listen for special effects (explosion, bounce)
+socket.on('specialEffect', (data) => {
+    if (data.blowUp) {
+        triggerExplosion();
+        // Only show message if it's not our own play (we already got feedback)
+        if (data.playerId !== playerId) {
+            showMessage('game-message', `${data.playerName} blew up the pile!`, 'success');
+        }
+    } else if (data.extraTurn && !data.blowUp) {
+        triggerPileBounce();
+        // Only show message if it's not our own play
+        if (data.playerId !== playerId) {
+            showMessage('game-message', `${data.playerName} played a 2!`, 'success');
+        }
+    }
 });

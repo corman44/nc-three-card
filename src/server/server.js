@@ -195,6 +195,27 @@ io.on('connection', (socket) => {
 
             callback({ success: true, result });
 
+            // Broadcast special effects to all players
+            if (result && (result.blowUp || result.extraTurn)) {
+                const player = game.players.find(p => p.id === playerInfo.playerId);
+                const effectData = {
+                    playerId: playerInfo.playerId,
+                    playerName: player ? player.name : 'Unknown',
+                    blowUp: result.blowUp || false,
+                    extraTurn: result.extraTurn || false
+                };
+
+                for (const p of game.players) {
+                    const socketId = playerSockets.get(p.id);
+                    if (socketId) {
+                        const playerSocket = io.sockets.sockets.get(socketId);
+                        if (playerSocket) {
+                            playerSocket.emit('specialEffect', effectData);
+                        }
+                    }
+                }
+            }
+
             // Broadcast updated state
             broadcastGameState(playerInfo.gameId);
 
