@@ -454,6 +454,52 @@ function updateActionButtons() {
     pickupBtn.disabled = !canPickup;
 }
 
+function triggerExplosion() {
+    const container = document.getElementById('explosion-container');
+    container.innerHTML = '';
+
+    // Create flash effect
+    const flash = document.createElement('div');
+    flash.className = 'explosion-flash';
+    container.appendChild(flash);
+
+    // Create shockwave ring
+    const ring = document.createElement('div');
+    ring.className = 'explosion-ring';
+    container.appendChild(ring);
+
+    // Create particles
+    const particleCount = 30;
+    const colors = ['#ff6b00', '#ff9500', '#ffbb00', '#ff3d00', '#ffd700', '#ff5722'];
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'explosion-particle';
+
+        // Random color
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+        // Random direction and distance
+        const angle = (Math.PI * 2 * i) / particleCount;
+        const distance = 80 + Math.random() * 120;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+
+        // Random delay for staggered effect
+        particle.style.animationDelay = `${Math.random() * 0.1}s`;
+
+        container.appendChild(particle);
+    }
+
+    // Clean up after animation
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 1000);
+}
+
 // Play selected cards
 document.getElementById('play-cards-btn').addEventListener('click', () => {
     if (selectedCards.length === 0) return;
@@ -464,7 +510,14 @@ document.getElementById('play-cards-btn').addEventListener('click', () => {
     socket.emit('playCards', { cardIndices, zone }, (response) => {
         if (response.success) {
             selectedCards = [];
-            showMessage('game-message', 'Cards played!', 'success');
+
+            // Trigger explosion animation if pile blew up
+            if (response.result && response.result.blowUp) {
+                triggerExplosion();
+                showMessage('game-message', 'BOOM! Pile blown up!', 'success');
+            } else {
+                showMessage('game-message', 'Cards played!', 'success');
+            }
         } else {
             showMessage('game-message', response.error, 'error');
         }
@@ -506,6 +559,13 @@ document.getElementById('new-game-btn').addEventListener('click', () => {
 
 // === SOCKET EVENT HANDLERS ===
 socket.on('gameState', (newGameState) => {
+    // Check if pile was blown up (pile went to 0 and top card changed)
+    const pileBlownUp = gameState &&
+                        gameState.pileCount > 0 &&
+                        newGameState.pileCount === 0 &&
+                        newGameState.gameStarted &&
+                        !newGameState.gameEnded;
+
     gameState = newGameState;
 
     if (gameState.gameEnded) {
@@ -513,6 +573,11 @@ socket.on('gameState', (newGameState) => {
     } else if (gameState.gameStarted) {
         showScreen('game');
         updateGameScreen();
+
+        // Trigger explosion if pile was blown up
+        if (pileBlownUp) {
+            triggerExplosion();
+        }
     } else {
         updateWaitingRoom();
     }
