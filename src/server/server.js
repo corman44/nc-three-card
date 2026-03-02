@@ -256,6 +256,50 @@ io.on('connection', (socket) => {
     });
 
     /**
+     * Send chat message
+     */
+    socket.on('sendChat', (data, callback) => {
+        try {
+            const playerInfo = socketPlayers.get(socket.id);
+            if (!playerInfo) {
+                throw new Error('Player not found');
+            }
+
+            const game = getGame(playerInfo.gameId);
+            if (!game) {
+                throw new Error('Game not found');
+            }
+
+            const player = game.players.find(p => p.id === playerInfo.playerId);
+            if (!player) {
+                throw new Error('Player not in game');
+            }
+
+            const chatMessage = {
+                playerId: player.id,
+                playerName: player.name,
+                message: data.message,
+                timestamp: Date.now()
+            };
+
+            // Broadcast chat message to all players in the game
+            for (const p of game.players) {
+                const socketId = playerSockets.get(p.id);
+                if (socketId) {
+                    const playerSocket = io.sockets.sockets.get(socketId);
+                    if (playerSocket) {
+                        playerSocket.emit('chatMessage', chatMessage);
+                    }
+                }
+            }
+
+            callback({ success: true });
+        } catch (error) {
+            callback({ success: false, error: error.message });
+        }
+    });
+
+    /**
      * Handle disconnect
      */
     socket.on('disconnect', () => {
