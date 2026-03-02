@@ -129,7 +129,7 @@ function updateGameScreen() {
     // Update turn indicator
     const turnIndicator = document.getElementById('turn-indicator');
     if (gameState.isYourTurn) {
-        turnIndicator.textContent = '✨ YOUR TURN ✨';
+        turnIndicator.textContent = 'YOUR TURN';
         turnIndicator.className = 'turn-indicator your-turn';
     } else {
         const currentPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
