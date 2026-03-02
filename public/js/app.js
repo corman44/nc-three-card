@@ -521,3 +521,51 @@ socket.on('gameState', (newGameState) => {
 socket.on('disconnect', () => {
     alert('Disconnected from server');
 });
+
+// === CHAT ===
+function addChatMessage(playerName, message) {
+    const chatMessages = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message';
+
+    messageDiv.innerHTML = `
+        <div class="chat-message-player">${playerName}</div>
+        <div class="chat-message-text">${escapeHtml(message)}</div>
+    `;
+
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    socket.emit('sendChat', { message }, (response) => {
+        if (response.success) {
+            input.value = '';
+        } else {
+            showMessage('game-message', 'Failed to send message', 'error');
+        }
+    });
+}
+
+document.getElementById('send-chat-btn').addEventListener('click', sendChatMessage);
+
+document.getElementById('chat-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendChatMessage();
+    }
+});
+
+socket.on('chatMessage', (data) => {
+    addChatMessage(data.playerName, data.message);
+});
