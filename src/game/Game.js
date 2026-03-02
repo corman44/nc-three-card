@@ -312,12 +312,28 @@ class Game {
             throw new Error('Not your turn');
         }
 
+        // Check if player has face-up cards and no hand cards (deck is empty)
+        // In this scenario, player MUST select a face-up card to pick up with pile
+        const hasNoHand = player.hand.length === 0;
+        const hasFaceUp = player.faceUp.length > 0;
+        const deckEmpty = this.deck.count() === 0;
+
+        if (hasNoHand && hasFaceUp && deckEmpty) {
+            if (faceUpIndex === null || faceUpIndex === undefined) {
+                throw new Error('Must select a face-up card to pick up with the pile');
+            }
+
+            if (!player.faceUp[faceUpIndex]) {
+                throw new Error('Invalid face-up card index');
+            }
+        }
+
         // Add pile to hand
         player.addCardsToHand([...this.pile]);
         this.pile = [];
 
         // If picking up from face-up zone, also add one face-up card
-        if (faceUpIndex !== null && player.faceUp[faceUpIndex]) {
+        if (faceUpIndex !== null && faceUpIndex !== undefined && player.faceUp[faceUpIndex]) {
             player.addToHand(player.removeFromFaceUp(faceUpIndex));
         }
 
