@@ -36,7 +36,7 @@ npm run dev
 
 ### Access the Game
 
-Open your browser to: **http://localhost:3000**
+Open your browser to: **http://localhost:3333**
 
 ## How to Play
 

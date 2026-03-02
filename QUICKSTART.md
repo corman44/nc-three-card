@@ -17,19 +17,19 @@ npm start
 
 You should see:
 ```
-Three Card Game server running on http://localhost:3000
+Three Card Game server running on http://localhost:3333
 ```
 
 ### 3. Open the Game
 
 **Option A: Multiple Players on Same Computer**
-1. Open **http://localhost:3000** in your browser
+1. Open **http://localhost:3333** in your browser
 2. Open another tab/window in **incognito mode** for player 2
 3. Or use different browsers (Chrome, Firefox, etc.)
 
 **Option B: Multiple Players on Different Computers**
-1. Player 1 starts the server and opens **http://localhost:3000**
-2. Other players connect to **http://YOUR-IP-ADDRESS:3000**
+1. Player 1 starts the server and opens **http://localhost:3333**
+2. Other players connect to **http://YOUR-IP-ADDRESS:3333**
    - To find your IP: `ipconfig` (Windows) or `ifconfig` (Mac/Linux)
 
 ## How to Play
@@ -61,15 +61,15 @@ Three Card Game server running on http://localhost:3000
 
 ## Troubleshooting
 
-### Port 3000 Already in Use?
+### Port 3333 Already in Use?
 Change the port in `src/server/server.js`:
 ```javascript
-const PORT = process.env.PORT || 3001; // Change to 3001
+const PORT = process.env.PORT || 3334; // Change to different port
 ```
 
 ### Can't Connect from Another Computer?
 1. Check your firewall settings
-2. Make sure port 3000 is open
+2. Make sure port 3333 is open
 3. Verify you're on the same network
 
 ### Game Not Updating?
