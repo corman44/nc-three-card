@@ -1,0 +1,26 @@
+{
+  "name": "three-card-game",
+  "version": "1.0.0",
+  "description": "Multiplayer turn-based card game - Three Card",
+  "main": "src/server/server.js",
+  "scripts": {
+    "start": "node src/server/server.js",
+    "dev": "nodemon src/server/server.js"
+  },
+  "keywords": [
+    "card-game",
+    "multiplayer",
+    "websocket",
+    "turn-based"
+  ],
+  "author": "Ceej",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
