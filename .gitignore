@@ -28,4 +28,8 @@ build/
 # Logs
 logs/
 *.log
+
+# Database
+data/*.db
+data/*.db-*
 data/game.db

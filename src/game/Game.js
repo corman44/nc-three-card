@@ -18,6 +18,7 @@ class Game {
         this.maxPlayers = playerCount;
         this.finishOrder = [];
         this.pileReset = false; // Track if pile was just reset by a 2
+        this.resultsRecorded = false; // Track if game results have been recorded to database
     }
 
     /**
