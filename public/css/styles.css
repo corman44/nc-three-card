@@ -784,6 +784,10 @@ body.game-active .container {
     opacity: 0.5;
 }
 
+/* Hide mobile action buttons on desktop */
+.action-section-mobile {
+    display: none;
+}
 
 /* Responsive */
 @media (max-width: 1024px) {
@@ -885,6 +889,52 @@ body.game-active .container {
 
     .control-panel .btn {
         padding: 12px;
+    }
+
+    /* Hide desktop control panel on mobile */
+    #game-screen .control-panel {
+        display: none;
+    }
+
+    /* Show mobile action buttons - fixed at bottom */
+    #game-screen .action-section-mobile {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(180deg, rgba(45, 55, 72, 0.95) 0%, rgba(26, 32, 44, 0.98) 100%);
+        padding: 12px 15px;
+        border-top: 3px solid rgba(139, 90, 43, 0.8);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+    }
+
+    #game-screen .action-section-mobile .btn {
+        margin-bottom: 8px;
+        font-size: 0.95em;
+        padding: 14px;
+        font-weight: 600;
+        width: 100%;
+    }
+
+    #game-screen .action-section-mobile .message {
+        margin-top: 8px;
+        margin-bottom: 0;
+        font-size: 0.85em;
+        text-align: center;
+    }
+
+    /* Add padding to player area to prevent overlap with fixed buttons */
+    #game-screen .player-area {
+        padding-bottom: 180px;
+    }
+
+    /* Adjust card table to allow scrolling without hiding buttons */
+    #game-screen .card-table {
+        overflow-y: auto;
+        padding-bottom: 20px;
     }
 }
 * {
