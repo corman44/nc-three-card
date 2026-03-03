@@ -28,3 +28,7 @@ build/
 # Logs
 logs/
 *.log
+
+# Database
+data/*.db
+data/*.db-*

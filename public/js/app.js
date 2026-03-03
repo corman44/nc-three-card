@@ -497,7 +497,57 @@ function showGameOver() {
             standings.appendChild(div);
         });
 
+    // Fetch and display current player's stats
+    fetchAndDisplayStats();
+
     showScreen('gameover');
+}
+
+function fetchAndDisplayStats() {
+    const currentPlayer = gameState.players.find(p => p.id === playerId);
+    if (!currentPlayer) return;
+
+    socket.emit('getPlayerStats', { username: currentPlayer.name }, (response) => {
+        if (response.success && response.stats) {
+            displayPlayerStats(response.stats);
+        } else {
+            // Player might be new, show default stats
+            displayPlayerStats({
+                username: currentPlayer.name,
+                wins: 0,
+                games_played: 1
+            });
+        }
+    });
+}
+
+function displayPlayerStats(stats) {
+    const statsContainer = document.getElementById('player-stats');
+
+    if (!stats) {
+        statsContainer.innerHTML = '';
+        return;
+    }
+
+    const winRate = stats.games_played > 0
+        ? ((stats.wins / stats.games_played) * 100).toFixed(1)
+        : 0;
+
+    statsContainer.innerHTML = `
+        <h3>Your Stats</h3>
+        <div class="stat-row">
+            <span class="stat-label">Total Wins:</span>
+            <span class="stat-value">${stats.wins || 0}</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Games Played:</span>
+            <span class="stat-value">${stats.games_played || 0}</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Win Rate:</span>
+            <span class="stat-value">${winRate}%</span>
+        </div>
+    `;
 }
 
 document.getElementById('new-game-btn').addEventListener('click', () => {

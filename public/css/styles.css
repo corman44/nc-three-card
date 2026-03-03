@@ -59,6 +59,42 @@ body.game-active .container {
     text-align: center;
 }
 
+.player-stats {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f7fafc;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+}
+
+.player-stats h3 {
+    color: #2d3748;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: #718096;
+    font-weight: 500;
+}
+
+.stat-value {
+    color: #2d3748;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
 .lobby-content h2,
 .waiting-content h2,
 .gameover-content h2 {

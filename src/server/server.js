@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const Game = require('../game/Game');
+const { incrementWin, incrementGamesPlayed, getPlayerStats } = require('../database/db');
 
 const app = express();
 const httpServer = createServer(app);
@@ -37,11 +38,43 @@ function getGame(gameId) {
 }
 
 /**
+ * Record game results in database
+ */
+function recordGameResults(game) {
+    if (!game.gameEnded || game.resultsRecorded) return;
+
+    // Mark results as recorded to prevent duplicates
+    game.resultsRecorded = true;
+
+    // Find the winner (player with finishPosition === 1)
+    const winner = game.players.find(p => p.finishPosition === 1);
+
+    if (winner) {
+        // Increment win count for winner
+        incrementWin(winner.name);
+        console.log(`Player ${winner.name} won! Recording victory.`);
+    }
+
+    // Increment games_played for all other players
+    game.players.forEach(player => {
+        if (player.id !== winner?.id) {
+            incrementGamesPlayed(player.name);
+            console.log(`Recording game played for ${player.name}`);
+        }
+    });
+}
+
+/**
  * Broadcast game state to all players in a game
  */
 function broadcastGameState(gameId) {
     const game = getGame(gameId);
     if (!game) return;
+
+    // Record game results if game has ended
+    if (game.gameEnded) {
+        recordGameResults(game);
+    }
 
     for (const player of game.players) {
         const socketId = playerSockets.get(player.id);
@@ -294,6 +327,23 @@ io.on('connection', (socket) => {
             }
 
             callback({ success: true });
+        } catch (error) {
+            callback({ success: false, error: error.message });
+        }
+    });
+
+    /**
+     * Get player stats
+     */
+    socket.on('getPlayerStats', (data, callback) => {
+        try {
+            const { username } = data;
+            if (!username) {
+                throw new Error('Username required');
+            }
+
+            const stats = getPlayerStats(username);
+            callback({ success: true, stats });
         } catch (error) {
             callback({ success: false, error: error.message });
         }
