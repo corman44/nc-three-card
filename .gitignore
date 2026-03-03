@@ -32,3 +32,4 @@ logs/
 # Database
 data/*.db
 data/*.db-*
+data/game.db

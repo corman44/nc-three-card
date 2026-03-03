@@ -173,3 +173,178 @@
     <script src="js/app.js"></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Card Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen active">
+            <div class="lobby-content">
+                <h2>Three Card Game</h2>
+                <p class="subtitle">Multiplayer Card Game (2-4 Players)</p>
+
+                <div class="form-group">
+                    <label for="player-name">Your Name:</label>
+                    <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+                </div>
+
+                <div class="action-buttons">
+                    <button id="create-game-btn" class="btn btn-primary">Create New Game</button>
+
+                    <div class="or-divider">OR</div>
+
+                    <div id="available-games-section">
+                        <h3>Available Games</h3>
+                        <div id="available-games-list" class="games-list">
+                            <div class="loading-games">Loading games...</div>
+                        </div>
+                    </div>
+
+                    <div class="or-divider">OR</div>
+
+                    <div class="form-group">
+                        <label for="game-id">Enter Game ID:</label>
+                        <input type="text" id="game-id" placeholder="Enter game ID to join">
+                    </div>
+                    <button id="join-game-btn" class="btn btn-secondary">Join by ID</button>
+                </div>
+
+                <div id="lobby-message" class="message"></div>
+            </div>
+        </div>
+
+        <!-- Waiting Room Screen -->
+        <div id="waiting-screen" class="screen">
+            <div class="waiting-content">
+                <h2>Waiting for Players...</h2>
+
+                <div class="game-info">
+                    <p><strong>Game ID:</strong> <span id="waiting-game-id" class="game-id"></span></p>
+                    <p class="share-text">Share this ID with other players</p>
+                </div>
+
+                <div id="players-list" class="players-list"></div>
+
+                <button id="start-game-btn" class="btn btn-primary" disabled>Start Game</button>
+                <div class="message">Need at least 2 players to start</div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <!-- Card Table (Main Game Area) -->
+            <div class="card-table">
+                <!-- Game Info Bar -->
+                <div class="game-info-bar">
+                    <div class="deck-info">
+                        <span>Deck: <strong id="deck-count">0</strong></span>
+                    </div>
+                    <div class="turn-info">
+                        <span id="turn-indicator">Waiting...</span>
+                    </div>
+                    <div class="pile-info">
+                        <span>Pile: <strong id="pile-count">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Other Players (Top of Table) -->
+                <div id="other-players" class="other-players"></div>
+
+                <!-- Center Pile (Middle of Table) -->
+                <div class="center-area">
+                    <div id="pile-display" class="pile-display">
+                        <div class="empty-pile">Empty Pile</div>
+                    </div>
+                    <div id="explosion-container" class="explosion-container"></div>
+                </div>
+
+                <!-- Current Player Area (Bottom of Table) -->
+                <div class="player-area">
+                    <h3>Your Cards</h3>
+
+                    <div class="card-zones-container">
+                        <!-- Hand Cards -->
+                        <div class="card-zone">
+                            <h4>Hand <span id="hand-count">(0)</span></h4>
+                            <div id="player-hand" class="card-container"></div>
+                        </div>
+
+                        <!-- Face-up Cards -->
+                        <div class="card-zone">
+                            <h4>Face-up <span id="faceup-count">(0)</span></h4>
+                            <div id="player-faceup" class="card-container"></div>
+                        </div>
+
+                        <!-- Face-down Cards -->
+                        <div class="card-zone">
+                            <h4>Face-down <span id="facedown-count">(0)</span></h4>
+                            <div id="player-facedown" class="card-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel (Right Side) -->
+            <div class="control-panel">
+                <h3>Controls</h3>
+
+                <!-- Game Info -->
+                <div class="info-section">
+                    <h4>Game Status</h4>
+                    <div class="info-item">
+                        <span>Cards in Deck:</span>
+                        <strong id="deck-count-panel">0</strong>
+                    </div>
+                    <div class="info-item">
+                        <span>Cards in Pile:</span>
+                        <strong id="pile-count-panel">0</strong>
+                    </div>
+                    <div class="info-item">
+                        <span>Your Total Cards:</span>
+                        <strong id="player-total-cards">0</strong>
+                    </div>
+                </div>
+
+                <!-- Chat -->
+                <div class="chat-section">
+                    <h4>Chat</h4>
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." maxlength="100">
+                        <button id="send-chat-btn" class="btn-chat-send">Send</button>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="action-section">
+                    <button id="play-cards-btn" class="btn btn-primary" disabled>
+                        Play Selected Cards
+                    </button>
+                    <button id="pickup-pile-btn" class="btn btn-secondary" disabled>
+                        Pick Up Pile
+                    </button>
+                    <div id="game-message" class="message"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen">
+            <div class="gameover-content">
+                <h2>Game Over!</h2>
+                <div id="final-standings" class="standings-list"></div>
+                <button id="new-game-btn" class="btn btn-primary">New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
