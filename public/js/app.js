@@ -493,15 +493,53 @@ function handlePlayCards() {
 
 // Shared function to pick up pile
 function handlePickupPile() {
-    socket.emit('pickUpPile', {}, (response) => {
-        if (response.success) {
-            showMessage('game-message', 'Picked up pile', 'info');
-            showMessage('game-message-mobile', 'Picked up pile', 'info');
-        } else {
-            showMessage('game-message', response.error, 'error');
-            showMessage('game-message-mobile', response.error, 'error');
+    // Check if player needs to select a face-up card
+    const currentPlayer = gameState.players.find(p => p.id === playerId);
+    const needsFaceUpSelection = currentPlayer &&
+                                  currentPlayer.handCount === 0 &&
+                                  currentPlayer.faceUp.length > 0 &&
+                                  gameState.deckCount === 0;
+
+    if (needsFaceUpSelection) {
+        // Check if a face-up card is selected
+        const hasFaceUpSelected = selectedCards.length > 0 && selectedCards[0].zone === 'faceUp';
+
+        if (!hasFaceUpSelected) {
+            showMessage('game-message', 'Select a face-up card to pick up with the pile', 'error');
+            showMessage('game-message-mobile', 'Select a face-up card to pick up with the pile', 'error');
+            return;
         }
-    });
+
+        // Only allow one face-up card
+        if (selectedCards.length > 1) {
+            showMessage('game-message', 'Select only ONE face-up card to pick up', 'error');
+            showMessage('game-message-mobile', 'Select only ONE face-up card to pick up', 'error');
+            return;
+        }
+
+        const faceUpIndex = selectedCards[0].index;
+        socket.emit('pickUpPile', { faceUpIndex }, (response) => {
+            if (response.success) {
+                selectedCards = [];
+                showMessage('game-message', 'Picked up pile with face-up card', 'info');
+                showMessage('game-message-mobile', 'Picked up pile with face-up card', 'info');
+            } else {
+                showMessage('game-message', response.error, 'error');
+                showMessage('game-message-mobile', response.error, 'error');
+            }
+        });
+    } else {
+        // Normal pickup (no face-up card needed)
+        socket.emit('pickUpPile', {}, (response) => {
+            if (response.success) {
+                showMessage('game-message', 'Picked up pile', 'info');
+                showMessage('game-message-mobile', 'Picked up pile', 'info');
+            } else {
+                showMessage('game-message', response.error, 'error');
+                showMessage('game-message-mobile', response.error, 'error');
+            }
+        });
+    }
 }
 
 // Desktop buttons
