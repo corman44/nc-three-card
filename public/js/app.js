@@ -443,6 +443,62 @@ function renderCard(card) {
     `;
 }
 
+function triggerExplosion() {
+    const container = document.getElementById('explosion-container');
+    container.innerHTML = '';
+
+    // Create flash effect
+    const flash = document.createElement('div');
+    flash.className = 'explosion-flash';
+    container.appendChild(flash);
+
+    // Create shockwave ring
+    const ring = document.createElement('div');
+    ring.className = 'explosion-ring';
+    container.appendChild(ring);
+
+    // Create particles
+    const particleCount = 30;
+    const colors = ['#ff6b00', '#ff9500', '#ffbb00', '#ff3d00', '#ffd700', '#ff5722'];
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'explosion-particle';
+
+        // Random color
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+        // Random direction and distance
+        const angle = (Math.PI * 2 * i) / particleCount;
+        const distance = 80 + Math.random() * 120;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+
+        // Random delay for staggered effect
+        particle.style.animationDelay = `${Math.random() * 0.1}s`;
+
+        container.appendChild(particle);
+    }
+
+    // Clean up after animation
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 1000);
+}
+
+function triggerPileBounce() {
+    const pileDisplay = document.getElementById('pile-display');
+    pileDisplay.classList.add('bounce');
+
+    // Remove class after animation completes
+    setTimeout(() => {
+        pileDisplay.classList.remove('bounce');
+    }, 600);
+}
+
 function updateActionButtons() {
     // Update both desktop and mobile buttons
     const playBtn = document.getElementById('play-cards-btn');
@@ -686,4 +742,21 @@ document.getElementById('chat-input').addEventListener('keypress', (e) => {
 
 socket.on('chatMessage', (data) => {
     addChatMessage(data.playerName, data.message);
+});
+
+// Listen for special effects (explosion, bounce)
+socket.on('specialEffect', (data) => {
+    if (data.blowUp) {
+        triggerExplosion();
+        // Only show message if it's not our own play (we already got feedback)
+        if (data.playerId !== playerId) {
+            showMessage('game-message', `${data.playerName} blew up the pile!`, 'success');
+        }
+    } else if (data.extraTurn && !data.blowUp) {
+        triggerPileBounce();
+        // Only show message if it's not our own play
+        if (data.playerId !== playerId) {
+            showMessage('game-message', `${data.playerName} played a 2!`, 'success');
+        }
+    }
 });
