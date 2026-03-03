@@ -8,6 +8,135 @@ let gameId = null;
 let selectedCards = [];
 let currentZone = 'hand';
 
+// Sound Manager
+const SoundManager = {
+    audioContext: null,
+    enabled: true,
+
+    init() {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    },
+
+    playCardSound() {
+        if (!this.enabled || !this.audioContext) return;
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.frequency.value = 400;
+        osc.type = 'sine';
+        gain.gain.value = 0.1;
+
+        osc.start(this.audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+        osc.stop(this.audioContext.currentTime + 0.1);
+    },
+
+    pickupSound() {
+        if (!this.enabled || !this.audioContext) return;
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.frequency.value = 300;
+        osc.type = 'triangle';
+        gain.gain.value = 0.15;
+
+        osc.start(this.audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, this.audioContext.currentTime + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+        osc.stop(this.audioContext.currentTime + 0.2);
+    },
+
+    explosionSound() {
+        if (!this.enabled || !this.audioContext) return;
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.frequency.value = 100;
+        osc.type = 'sawtooth';
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        gain.gain.value = 0.3;
+
+        osc.start(this.audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, this.audioContext.currentTime + 0.3);
+        filter.frequency.exponentialRampToValueAtTime(200, this.audioContext.currentTime + 0.3);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+        osc.stop(this.audioContext.currentTime + 0.3);
+    },
+
+    bounceSound() {
+        if (!this.enabled || !this.audioContext) return;
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.frequency.value = 600;
+        osc.type = 'sine';
+        gain.gain.value = 0.12;
+
+        osc.start(this.audioContext.currentTime);
+        osc.frequency.setValueAtTime(600, this.audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 0.05);
+        osc.frequency.exponentialRampToValueAtTime(600, this.audioContext.currentTime + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+        osc.stop(this.audioContext.currentTime + 0.2);
+    },
+
+    selectSound() {
+        if (!this.enabled || !this.audioContext) return;
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.frequency.value = 800;
+        osc.type = 'sine';
+        gain.gain.value = 0.08;
+
+        osc.start(this.audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.05);
+        osc.stop(this.audioContext.currentTime + 0.05);
+    },
+
+    winSound() {
+        if (!this.enabled || !this.audioContext) return;
+        const playNote = (freq, delay, duration) => {
+            const osc = this.audioContext.createOscillator();
+            const gain = this.audioContext.createGain();
+
+            osc.connect(gain);
+            gain.connect(this.audioContext.destination);
+
+            osc.frequency.value = freq;
+            osc.type = 'triangle';
+            gain.gain.value = 0.1;
+
+            osc.start(this.audioContext.currentTime + delay);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + delay + duration);
+            osc.stop(this.audioContext.currentTime + delay + duration);
+        };
+
+        // Victory melody
+        playNote(523, 0, 0.15);      // C
+        playNote(659, 0.15, 0.15);   // E
+        playNote(784, 0.3, 0.3);     // G
+    }
+};
+
 // DOM Elements
 const screens = {
     lobby: document.getElementById('lobby-screen'),
@@ -121,6 +250,13 @@ function stopGamesRefresh() {
 }
 
 // Start loading games when socket connects
+// Initialize sound on first user interaction (required by browsers)
+document.addEventListener('click', () => {
+    if (!SoundManager.audioContext) {
+        SoundManager.init();
+    }
+}, { once: true });
+
 socket.on('connect', () => {
     if (screens.lobby.classList.contains('active')) {
         startGamesRefresh();
@@ -372,6 +508,7 @@ function createCardElement(card, index, zone, disabled = false) {
         if (selectedIndex > -1) {
             selectedCards.splice(selectedIndex, 1);
             div.classList.remove('selected');
+            SoundManager.selectSound();
         } else {
             // Check if selecting from correct zone
             if (selectedCards.length > 0 && selectedCards[0].zone !== zone) {
@@ -385,6 +522,7 @@ function createCardElement(card, index, zone, disabled = false) {
             selectedCards.push({ index, zone });
             div.classList.add('selected');
             currentZone = zone;
+            SoundManager.selectSound();
         }
 
         updateActionButtons();
@@ -415,6 +553,7 @@ function createCardBack(index, disabled = false) {
         if (selectedIndex > -1) {
             selectedCards.splice(selectedIndex, 1);
             div.classList.remove('selected');
+            SoundManager.selectSound();
         } else {
             // Clear previous selections
             selectedCards = [];
@@ -425,6 +564,7 @@ function createCardBack(index, disabled = false) {
             selectedCards.push({ index, zone: 'faceDown' });
             div.classList.add('selected');
             currentZone = 'faceDown';
+            SoundManager.selectSound();
         }
 
         updateActionButtons();
@@ -473,6 +613,9 @@ function triggerExplosion() {
     const container = document.getElementById('explosion-container');
     container.innerHTML = '';
 
+    // Play explosion sound
+    SoundManager.explosionSound();
+
     // Create flash effect
     const flash = document.createElement('div');
     flash.className = 'explosion-flash';
@@ -519,6 +662,9 @@ function triggerPileBounce() {
     const pileDisplay = document.getElementById('pile-display');
     pileDisplay.classList.add('bounce');
 
+    // Play bounce sound
+    SoundManager.bounceSound();
+
     // Remove class after animation completes
     setTimeout(() => {
         pileDisplay.classList.remove('bounce');
@@ -540,13 +686,16 @@ document.getElementById('play-cards-btn').addEventListener('click', () => {
             if (response.result && response.result.blowUp) {
                 triggerExplosion();
                 showMessage('game-message', 'BOOM! Pile blown up!', 'success');
+                // Sound is triggered in special effect handler
             }
             // Trigger bounce animation if reset card (2) was played (extraTurn but no blowUp)
             else if (response.result && response.result.extraTurn && !response.result.blowUp) {
                 triggerPileBounce();
                 showMessage('game-message', 'Reset! Play any card', 'success');
+                // Sound is triggered in special effect handler
             }
             else {
+                SoundManager.playCardSound();
                 showMessage('game-message', 'Cards played!', 'success');
             }
         } else {
@@ -583,6 +732,7 @@ document.getElementById('pickup-pile-btn').addEventListener('click', () => {
         socket.emit('pickUpPile', { faceUpIndex }, (response) => {
             if (response.success) {
                 selectedCards = [];
+                SoundManager.pickupSound();
                 showMessage('game-message', 'Picked up pile with face-up card', 'info');
             } else {
                 showMessage('game-message', response.error, 'error');
@@ -592,6 +742,7 @@ document.getElementById('pickup-pile-btn').addEventListener('click', () => {
         // Normal pickup (no face-up card needed)
         socket.emit('pickUpPile', {}, (response) => {
             if (response.success) {
+                SoundManager.pickupSound();
                 showMessage('game-message', 'Picked up pile', 'info');
             } else {
                 showMessage('game-message', response.error, 'error');
@@ -614,6 +765,12 @@ function showGameOver() {
             div.textContent = `${player.finishPosition}. ${player.name}`;
             standings.appendChild(div);
         });
+
+    // Play win sound if current player finished first
+    const currentPlayer = gameState.players.find(p => p.id === playerId);
+    if (currentPlayer && currentPlayer.finished && currentPlayer.finishPosition === 1) {
+        SoundManager.winSound();
+    }
 
     showScreen('gameover');
 }
