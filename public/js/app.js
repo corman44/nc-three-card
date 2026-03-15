@@ -79,9 +79,11 @@ function loadAvailableGames() {
 
 // Join a game by ID
 function joinGameById(joinGameId) {
+    soundManager.buttonClick();
     const playerName = document.getElementById('player-name').value.trim();
 
     if (!playerName) {
+        soundManager.error();
         showMessage('lobby-message', 'Please enter your name first', 'error');
         return;
     }
@@ -92,10 +94,12 @@ function joinGameById(joinGameId) {
             gameId = joinGameId;
             gameState = response.gameState;
 
+            soundManager.confirm();
             document.getElementById('waiting-game-id').textContent = gameId;
             showScreen('waiting');
             updateWaitingRoom();
         } else {
+            soundManager.error();
             showMessage('lobby-message', response.error, 'error');
         }
     });
@@ -128,9 +132,11 @@ socket.on('connect', () => {
 });
 
 document.getElementById('create-game-btn').addEventListener('click', () => {
+    soundManager.buttonClick();
     const playerName = document.getElementById('player-name').value.trim();
 
     if (!playerName) {
+        soundManager.error();
         showMessage('lobby-message', 'Please enter your name', 'error');
         return;
     }
@@ -141,21 +147,25 @@ document.getElementById('create-game-btn').addEventListener('click', () => {
             gameId = response.gameId;
             gameState = response.gameState;
 
+            soundManager.confirm();
             stopGamesRefresh();
             document.getElementById('waiting-game-id').textContent = gameId;
             showScreen('waiting');
             updateWaitingRoom();
         } else {
+            soundManager.error();
             showMessage('lobby-message', response.error, 'error');
         }
     });
 });
 
 document.getElementById('join-game-btn').addEventListener('click', () => {
+    soundManager.buttonClick();
     const playerName = document.getElementById('player-name').value.trim();
     const joinGameId = document.getElementById('game-id').value.trim();
 
     if (!playerName || !joinGameId) {
+        soundManager.error();
         showMessage('lobby-message', 'Please enter your name and game ID', 'error');
         return;
     }
@@ -166,10 +176,12 @@ document.getElementById('join-game-btn').addEventListener('click', () => {
             gameId = joinGameId;
             gameState = response.gameState;
 
+            soundManager.confirm();
             document.getElementById('waiting-game-id').textContent = gameId;
             showScreen('waiting');
             updateWaitingRoom();
         } else {
+            soundManager.error();
             showMessage('lobby-message', response.error, 'error');
         }
     });
@@ -192,10 +204,13 @@ function updateWaitingRoom() {
 }
 
 document.getElementById('start-game-btn').addEventListener('click', () => {
+    soundManager.buttonClick();
     socket.emit('startGame', {}, (response) => {
         if (response.success) {
+            soundManager.confirm();
             // Game will start, wait for gameState update
         } else {
+            soundManager.error();
             alert(response.error);
         }
     });
@@ -370,9 +385,11 @@ function createCardElement(card, index, zone, disabled = false) {
         const selectedIndex = selectedCards.findIndex(c => c.index === index && c.zone === zone);
 
         if (selectedIndex > -1) {
+            soundManager.cardDeselect();
             selectedCards.splice(selectedIndex, 1);
             div.classList.remove('selected');
         } else {
+            soundManager.cardSelect();
             // Check if selecting from correct zone
             if (selectedCards.length > 0 && selectedCards[0].zone !== zone) {
                 // Clear previous selections
@@ -413,9 +430,11 @@ function createCardBack(index, disabled = false) {
         const selectedIndex = selectedCards.findIndex(c => c.index === index && c.zone === 'faceDown');
 
         if (selectedIndex > -1) {
+            soundManager.cardDeselect();
             selectedCards.splice(selectedIndex, 1);
             div.classList.remove('selected');
         } else {
+            soundManager.cardSelect();
             // Clear previous selections
             selectedCards = [];
             document.querySelectorAll('.card.selected, .card-back.selected').forEach(c => {
@@ -537,10 +556,12 @@ function handlePlayCards() {
 
     socket.emit('playCards', { cardIndices, zone }, (response) => {
         if (response.success) {
+            soundManager.confirm();
             selectedCards = [];
             showMessage('game-message', 'Cards played!', 'success');
             showMessage('game-message-mobile', 'Cards played!', 'success');
         } else {
+            soundManager.error();
             showMessage('game-message', response.error, 'error');
             showMessage('game-message-mobile', response.error, 'error');
         }
@@ -561,6 +582,7 @@ function handlePickupPile() {
         const hasFaceUpSelected = selectedCards.length > 0 && selectedCards[0].zone === 'faceUp';
 
         if (!hasFaceUpSelected) {
+            soundManager.error();
             showMessage('game-message', 'Select a face-up card to pick up with the pile', 'error');
             showMessage('game-message-mobile', 'Select a face-up card to pick up with the pile', 'error');
             return;
@@ -568,6 +590,7 @@ function handlePickupPile() {
 
         // Only allow one face-up card
         if (selectedCards.length > 1) {
+            soundManager.error();
             showMessage('game-message', 'Select only ONE face-up card to pick up', 'error');
             showMessage('game-message-mobile', 'Select only ONE face-up card to pick up', 'error');
             return;
@@ -576,10 +599,12 @@ function handlePickupPile() {
         const faceUpIndex = selectedCards[0].index;
         socket.emit('pickUpPile', { faceUpIndex }, (response) => {
             if (response.success) {
+                soundManager.effectDraw();
                 selectedCards = [];
                 showMessage('game-message', 'Picked up pile with face-up card', 'info');
                 showMessage('game-message-mobile', 'Picked up pile with face-up card', 'info');
             } else {
+                soundManager.error();
                 showMessage('game-message', response.error, 'error');
                 showMessage('game-message-mobile', response.error, 'error');
             }
@@ -588,9 +613,11 @@ function handlePickupPile() {
         // Normal pickup (no face-up card needed)
         socket.emit('pickUpPile', {}, (response) => {
             if (response.success) {
+                soundManager.effectDraw();
                 showMessage('game-message', 'Picked up pile', 'info');
                 showMessage('game-message-mobile', 'Picked up pile', 'info');
             } else {
+                soundManager.error();
                 showMessage('game-message', response.error, 'error');
                 showMessage('game-message-mobile', response.error, 'error');
             }
@@ -675,16 +702,28 @@ function displayPlayerStats(stats) {
 }
 
 document.getElementById('new-game-btn').addEventListener('click', () => {
+    soundManager.buttonClick();
     location.reload();
 });
 
 // === SOCKET EVENT HANDLERS ===
 socket.on('gameState', (newGameState) => {
+    const wasMyTurn = gameState ? gameState.isYourTurn : false;
     gameState = newGameState;
 
     if (gameState.gameEnded) {
+        // Check if we won
+        const myPlayer = gameState.players.find(p => p.id === playerId);
+        const myPosition = gameState.players
+            .sort((a, b) => (a.totalCards || 999) - (b.totalCards || 999))
+            .findIndex(p => p.id === playerId);
+        soundManager.gameOver(myPosition === 0);
         showGameOver();
     } else if (gameState.gameStarted) {
+        // Play turn start sound when it becomes our turn
+        if (gameState.isYourTurn && !wasMyTurn) {
+            soundManager.turnStart();
+        }
         showScreen('game');
         updateGameScreen();
     } else {
@@ -747,12 +786,14 @@ socket.on('chatMessage', (data) => {
 // Listen for special effects (explosion, bounce)
 socket.on('specialEffect', (data) => {
     if (data.blowUp) {
+        soundManager.effectAttack(); // Explosion sound
         triggerExplosion();
         // Only show message if it's not our own play (we already got feedback)
         if (data.playerId !== playerId) {
             showMessage('game-message', `${data.playerName} blew up the pile!`, 'success');
         }
     } else if (data.extraTurn && !data.blowUp) {
+        soundManager.effectDefend(); // Extra turn sound
         triggerPileBounce();
         // Only show message if it's not our own play
         if (data.playerId !== playerId) {
