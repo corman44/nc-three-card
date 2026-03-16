@@ -71,12 +71,12 @@ class SoundManager {
 
     // Card select/click sound
     cardSelect() {
-        this.playTone(800, 0.08, 'sine', 0.4);
+        this.playTone(800, 0.04, 'sine', 0.4);
     }
 
     // Card deselect sound
     cardDeselect() {
-        this.playTone(600, 0.08, 'sine', 0.3);
+        this.playTone(600, 0.04, 'sine', 0.3);
     }
 
     // Button click sound

@@ -556,7 +556,6 @@ function handlePlayCards() {
 
     socket.emit('playCards', { cardIndices, zone }, (response) => {
         if (response.success) {
-            soundManager.confirm();
             selectedCards = [];
             showMessage('game-message', 'Cards played!', 'success');
             showMessage('game-message-mobile', 'Cards played!', 'success');
