@@ -624,11 +624,11 @@ function handlePickupPile() {
     }
 }
 
-// Desktop buttons
+// Desktop buttons (no sound - actions provide their own feedback)
 document.getElementById('play-cards-btn').addEventListener('click', handlePlayCards);
 document.getElementById('pickup-pile-btn').addEventListener('click', handlePickupPile);
 
-// Mobile buttons
+// Mobile buttons (no sound - actions provide their own feedback)
 document.getElementById('play-cards-btn-mobile').addEventListener('click', handlePlayCards);
 document.getElementById('pickup-pile-btn-mobile').addEventListener('click', handlePickupPile);
 
@@ -785,7 +785,7 @@ socket.on('chatMessage', (data) => {
 // Listen for special effects (explosion, bounce)
 socket.on('specialEffect', (data) => {
     if (data.blowUp) {
-        soundManager.effectAttack(); // Explosion sound
+        soundManager.effectExplosion(); // Explosion sound for 10s
         triggerExplosion();
         // Only show message if it's not our own play (we already got feedback)
         if (data.playerId !== playerId) {

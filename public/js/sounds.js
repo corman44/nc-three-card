@@ -136,6 +136,44 @@ class SoundManager {
         ], 0.08);
     }
 
+    // Explosion effect (for 10s clearing the pile)
+    effectExplosion() {
+        if (!this.enabled || !this.context) return;
+
+        // Create a more dramatic explosion with white noise burst
+        const bufferSize = this.context.sampleRate * 0.3; // 0.3 seconds
+        const buffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        // Generate white noise that fades out
+        for (let i = 0; i < bufferSize; i++) {
+            const decay = 1 - (i / bufferSize);
+            data[i] = (Math.random() * 2 - 1) * decay * 0.5;
+        }
+
+        const noise = this.context.createBufferSource();
+        noise.buffer = buffer;
+
+        const noiseGain = this.context.createGain();
+        noiseGain.gain.setValueAtTime(this.volume * 0.6, this.context.currentTime);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.3);
+
+        noise.connect(noiseGain);
+        noiseGain.connect(this.context.destination);
+        noise.start(this.context.currentTime);
+
+        // Add low frequency boom
+        this.playTone(80, 0.2, 'sawtooth', 0.8);
+
+        // Add descending whoosh
+        setTimeout(() => {
+            this.playTone(1200, 0.15, 'sine', 0.4);
+        }, 50);
+        setTimeout(() => {
+            this.playTone(400, 0.2, 'sine', 0.3);
+        }, 100);
+    }
+
     // Defend/shield effect
     effectDefend() {
         this.playMelody([
